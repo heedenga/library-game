@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>책 제목을 외워라!</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  /* 따뜻한 책방 팔레트 */
+  :root{
+    --bg:        #F5EFE6;
+    --bg2:       #EDE4D4;
+    --bg3:       #E2D5C0;
+    --wood:      #8B5E3C;
+    --wood-dark: #6B4226;
+    --wood-light:#C49A6C;
+    --text:      #3B2A1A;
+    --text2:     #7A5C3E;
+    --text3:     #A68660;
+    --red:       #B85C38;
+    --green:     #4A7C59;
+    --border:    #D4C4A8;
+  }
+
+  body{
+    font-family:'Noto Sans KR',sans-serif;
+    background:var(--bg);
+    background-image:
+      radial-gradient(circle at 20% 50%, rgba(196,154,108,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(139,94,60,0.06) 0%, transparent 40%);
+    color:var(--text);
+    min-height:100vh;
+  }
+  #app{max-width:600px;margin:0 auto;padding:0 0 40px;}
+  button{font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
+  input{font-family:'Noto Sans KR',sans-serif;}
+
+  .card{
+    background:rgba(255,252,245,0.85);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:1rem;
+    box-shadow:0 2px 8px rgba(139,94,60,0.08);
+  }
+  .btn-green{
+    background:var(--green);color:#fff;border:none;border-radius:14px;
+    font-size:16px;font-weight:500;padding:15px;width:100%;
+    box-shadow:0 4px 0 #335940;
+    transition:transform 0.1s,box-shadow 0.1s;
+  }
+  .btn-green:active{transform:translateY(3px);box-shadow:0 1px 0 #335940;}
+  .btn-outline{
+    background:rgba(255,252,245,0.7);border:1px solid var(--border);
+    border-radius:14px;font-size:14px;padding:12px;width:100%;color:var(--text2);
+  }
+  .btn-red{
+    background:var(--red);color:#fff;border:none;border-radius:14px;
+    font-size:16px;font-weight:500;padding:16px;flex:1;
+    box-shadow:0 4px 0 #8B3A1E;
+    transition:transform 0.1s,box-shadow 0.1s;
+  }
+  .btn-red:active{transform:translateY(3px);box-shadow:0 1px 0 #8B3A1E;}
+  .tag{
+    font-size:12px;padding:4px 12px;
+    background:rgba(255,252,245,0.9);
+    border:1px solid var(--border);
+    border-radius:20px;color:var(--text);
+  }
+  .timer-bar-wrap{height:6px;background:var(--bg3);border-radius:10px;overflow:hidden;margin-bottom:1.25rem;}
+  .timer-bar{height:100%;border-radius:10px;transition:width 1s linear,background 0.5s;}
+  .book-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:0 4px;}
+  .book-cover{
+    border-radius:4px 10px 10px 4px;
+    box-shadow:3px 4px 10px rgba(59,42,26,0.3),-1px 0 0 rgba(59,42,26,0.15);
+    position:relative;overflow:hidden;width:100%;aspect-ratio:0.68;
+  }
+  .book-cover img{width:100%;height:100%;object-fit:cover;display:block;}
+  .book-cover-color{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;}
+  .book-cover-line{width:85%;height:1.5px;background:rgba(255,255,255,0.35);}
+  .book-cover-title{color:#fff;font-weight:500;text-align:center;line-height:1.4;word-break:keep-all;font-family:'Noto Serif KR',serif;}
+  .book-cover-mask{position:absolute;bottom:0;left:0;right:0;height:30%;background:rgba(30,15,5,0.92);display:flex;align-items:center;justify-content:center;}
+  .book-cover-mask-bar{width:55%;height:11px;background:rgba(255,255,255,0.1);border-radius:3px;}
+  .book-cover-q{position:absolute;font-size:20px;color:rgba(255,255,255,0.2);}
+  .upload-box{height:110px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;}
+  .upload-box-emoji{font-size:22px;}
+  .upload-box-label{font-size:11px;}
+  .upload-box-hint{font-size:10px;color:var(--text3);}
+  .upload-img{width:100%;height:110px;object-fit:cover;border-radius:12px;}
+  .hint-box{background:rgba(255,248,235,0.95);border:1px solid var(--wood-light);border-radius:14px;padding:12px 14px;margin-bottom:1rem;text-align:left;}
+  .hint-title{font-size:12px;font-weight:500;color:var(--wood-dark);margin-bottom:8px;font-family:'Noto Serif KR',serif;}
+  .hint-tags{display:flex;flex-wrap:wrap;gap:6px;}
+  .list-item{display:flex;align-items:center;gap:10px;background:rgba(255,252,245,0.8);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+  .list-thumb{width:38px;height:52px;border-radius:4px 8px 8px 4px;flex-shrink:0;object-fit:cover;}
+  .list-thumb-color{width:38px;height:52px;border-radius:4px 8px 8px 4px;flex-shrink:0;}
+  .result-emoji{font-size:64px;margin-bottom:12px;text-align:center;}
+  .back-header{
+    background:rgba(107,66,38,0.95);
+    backdrop-filter:blur(6px);
+    border-bottom:2px solid var(--wood-light);
+    color:#fff;
+  }
+  .back-header button{color:rgba(255,255,255,0.8);}
+  .back-header div{color:#fff !important;}
+  .deco-line{width:40px;height:3px;background:var(--wood-light);border-radius:10px;margin:8px auto 0;}
+  .info-box{
+    background:rgba(255,252,245,0.7);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 14px;font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:14px;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const PHASE={HOME:"home",ADMIN:"admin",MEMORIZE:"memorize",QUIZ:"quiz",RESULT:"result"};
+const MEMORIZE_SEC=15,QUIZ_SEC=10,HINT_AT=5,SHOW_COUNT=10,ADMIN_PASS="1234";
+const COLORS=["#C62828","#2E7D32","#1565C0","#F57F17","#6A1B9A","#00695C","#E65100","#283593",
+  "#0277BD","#4E342E","#37474F","#BF360C","#1A237E","#212121","#880E4F","#33691E",
+  "#827717","#006064","#4527A0","#AD1457","#558B2F","#E53935","#5D4037","#00838F"];
+const DEMO_BOOKS=["소년이 온다","채식주의자","82년생 김지영","아몬드","완전한 행복",
+  "지구 끝의 온실","불편한 편의점","달러구트 꿈 백화점","어린 왕자","데미안",
+  "노인과 바다","파친코","레 미제라블","죄와 벌","변신","이방인","위대한 개츠비",
+  "앵무새 죽이기","오만과 편견","동물농장","호밀밭의 파수꾼","보건교사 안은영",
+  "해리포터","반지의 제왕","멋진 신세계"].map((t,i)=>({title:t,color:COLORS[i%COLORS.length]}));
+
+// ── 유틸 ──────────────────────────────────────────────────────────────────
+function shuffle(a){return[...a].sort(()=>Math.random()-0.5);}
+function readFile(f){return new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(f);});}
+
+// ── 로컬 저장 ────────────────────────────────────────────────────────────
+function hasData(k){try{return localStorage.getItem(k)!==null;}catch{return false;}}
+function loadData(k,d){try{const s=localStorage.getItem(k);return s===null?d:JSON.parse(s);}catch{return d;}}
+function saveData(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+function el(tag,attrs={},children=[]){
+  const e=document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v])=>{
+    if(k==="style"&&typeof v==="object"){Object.assign(e.style,v);}
+    else if(k.startsWith("on")){e.addEventListener(k.slice(2).toLowerCase(),v);}
+    else if(k==="className"){e.className=v;}
+    else{e.setAttribute(k,v);}
+  });
+  children.forEach(c=>{if(c!=null&&c!==false){e.appendChild(typeof c==="string"?document.createTextNode(c):c);}});
+  return e;
+}
+
+// ── 상태 ──────────────────────────────────────────────────────────────────
+const state={
+  phase:PHASE.HOME,
+  books: hasData("lib_books7")?loadData("lib_books7",[]):DEMO_BOOKS,
+  shownBooks:[],
+  quizBook:null,
+  memTime:MEMORIZE_SEC,
+  quizTime:QUIZ_SEC,
+  showHint:false,
+  correct:null,
+  adminAuth:false,
+  adminPass:"",
+  passErr:"",
+  adminTab:"upload",
+  slots:[],
+  confirmIdx:null,
+  editIdx:null,
+};
+let memTimerID=null, quizTimerID=null;
+
+function setState(patch){Object.assign(state,typeof patch==="function"?patch(state):patch);render();}
+
+
+
+// ── 책 표지 DOM ───────────────────────────────────────────────────────────
+function BookCover(book,showTitle=true,size="sm"){
+  const dim={sm:{w:null,h:null,fs:9},md:{w:130,h:180,fs:13},lg:{w:190,h:265,fs:16}}[size];
+  const imgUrl=showTitle?(book.titleImageUrl||null):(book.noTitleImageUrl||book.titleImageUrl||null);
+  const sizeStyle=dim.w?{width:dim.w+"px",height:dim.h+"px"}:{};
+  const wrap=el("div",{className:"book-cover",style:{...sizeStyle,background:book.color||"#3949AB"}});
+  if(imgUrl){
+    wrap.appendChild(el("img",{src:imgUrl,alt:book.title}));
+    if(!showTitle&&!book.noTitleImageUrl){
+      const mask=el("div",{className:"book-cover-mask"});
+      mask.appendChild(el("div",{className:"book-cover-mask-bar"}));
+      mask.appendChild(el("div",{className:"book-cover-q"},["?"]));
+      wrap.appendChild(mask);
+    }
+  } else {
+    wrap.classList.add("book-cover-color");
+    wrap.appendChild(el("div",{className:"book-cover-line"}));
+    if(showTitle){
+      const fs=dim.fs?dim.fs+"px":"clamp(7px,2vw,11px)";
+      wrap.appendChild(el("div",{className:"book-cover-title",style:{fontSize:fs,margin:"6px 0"}},[ book.title ]));
+    } else {
+      wrap.appendChild(el("div",{style:{fontSize:"24px",color:"rgba(255,255,255,0.22)",margin:"10px 0"}},["?"]));
+    }
+    wrap.appendChild(el("div",{className:"book-cover-line"}));
+  }
+  return wrap;
+}
+
+// ── 타이머 색상 ───────────────────────────────────────────────────────────
+function tColor(t,max){return t<=max*0.2?"#E53935":t<=max*0.5?"#EF9F27":"#2E7D32";}
+
+// ── 공통 뒤로가기 헤더 ───────────────────────────────────────────────────────
+function BackHeader(title, onBack){
+  const h=el("div",{className:"back-header",style:{display:"flex",alignItems:"center",gap:"10px",padding:"0.9rem 1rem",position:"sticky",top:"0",zIndex:"10"}});
+  const btn=el("button",{style:{background:"none",border:"none",fontSize:"22px",cursor:"pointer",lineHeight:"1",padding:"0 4px 0 0",color:"rgba(247,243,233,0.8)"},onClick:onBack},["←"]);
+  h.appendChild(btn);
+  h.appendChild(el("div",{style:{fontSize:"16px",fontWeight:"700",color:"#F7F3E9",fontFamily:"'Noto Serif KR',serif",letterSpacing:"0.05em"}},[title]));
+  return h;
+}
+
+// ── 화면 렌더 ─────────────────────────────────────────────────────────────
+function render(){
+  const app=document.getElementById("app");
+  app.innerHTML="";
+  app.style.padding="0";
+
+  if(state.phase===PHASE.HOME) app.appendChild(renderHome());
+  else if(state.phase===PHASE.MEMORIZE) app.appendChild(renderMemorize());
+  else if(state.phase===PHASE.QUIZ) app.appendChild(renderQuiz());
+  else if(state.phase===PHASE.RESULT) app.appendChild(renderResult());
+  else if(state.phase===PHASE.ADMIN) app.appendChild(renderAdmin());
+}
+
+// ── HOME ──────────────────────────────────────────────────────────────────
+function renderHome(){
+  const wrap=el("div",{style:{maxWidth:"480px",margin:"0 auto",padding:"2rem 1rem",textAlign:"center"}});
+  wrap.appendChild(el("div",{style:{fontSize:"52px",marginBottom:"10px"}},["📚"]));
+  const homeTitle=el("div",{style:{fontSize:"24px",fontWeight:"700",marginBottom:"4px",fontFamily:"'Noto Serif KR',serif",color:"var(--wood-dark)",letterSpacing:"0"}},["책 제목을 외워라!"]);
+  wrap.appendChild(homeTitle);
+  wrap.appendChild(el("div",{className:"deco-line"}));
+  wrap.appendChild(el("div",{style:{fontSize:"14px",color:"var(--text2)",lineHeight:"1.9",marginBottom:"2rem",marginTop:"12px"}},["15초간 10권의 책표지와 제목을 외워보세요!"]));
+
+
+  const grid=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"2rem"}});
+  [["👀","15초 암기","표지 10권 집중"],["🤔","제목 퀴즈","표지만 보고 맞히기"]].forEach(([ic,t,d])=>{
+    const c=el("div",{className:"card",style:{textAlign:"center",padding:"16px 10px"}});
+    c.appendChild(el("div",{style:{fontSize:"28px",marginBottom:"6px"}},[ic]));
+    c.appendChild(el("div",{style:{fontSize:"13px",fontWeight:"500",marginBottom:"3px"}},[t]));
+    c.appendChild(el("div",{style:{fontSize:"11px",color:"#6b6966",lineHeight:"1.5"}},[d]));
+    grid.appendChild(c);
+  });
+  wrap.appendChild(grid);
+
+  const btnStart=el("button",{className:"btn-green",style:{marginBottom:"10px",fontSize:"16px"},onClick:startGame},["📖 게임 시작"]);
+  wrap.appendChild(btnStart);
+  const btnAdmin=el("button",{className:"btn-outline",onClick:()=>setState({phase:PHASE.ADMIN,adminAuth:false,adminPass:"",passErr:"",adminTab:"upload"})},["🔧 관리자 메뉴"]);
+  wrap.appendChild(btnAdmin);
+  wrap.appendChild(el("div",{style:{marginTop:"10px",fontSize:"12px",color:"#9b9994"}},["등록된 책 "+state.books.length+"권 · 랜덤 10권 출제"]));
+  return wrap;
+}
+
+// ── MEMORIZE ──────────────────────────────────────────────────────────────
+function renderMemorize(){
+  const mc=tColor(state.memTime,MEMORIZE_SEC);
+  const wrap=el("div",{style:{maxWidth:"600px",margin:"0 auto"}});
+  wrap.appendChild(BackHeader("👀 표지를 외워요!",()=>{clearInterval(memTimerID);setState({phase:PHASE.HOME});}));
+  const inner=el("div",{style:{padding:"1rem 0.75rem"}});
+
+  const row=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}});
+  row.appendChild(el("div",{style:{fontSize:"14px",fontWeight:"500",color:"#6b6966"}},[""]));
+  row.appendChild(el("div",{id:"mem-timer",style:{fontSize:"26px",fontWeight:"500",color:mc}},[state.memTime+"초"]));
+  inner.appendChild(row);
+
+  const barWrap=el("div",{className:"timer-bar-wrap"});
+  barWrap.appendChild(el("div",{id:"mem-bar",className:"timer-bar",style:{width:(state.memTime/MEMORIZE_SEC*100)+"%",background:mc}}));
+  inner.appendChild(barWrap);
+
+  const grid=el("div",{className:"book-grid"});
+  state.shownBooks.forEach(b=>{
+    const cell=el("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:"5px"}});
+    cell.appendChild(BookCover(b,true,"sm"));
+    cell.appendChild(el("div",{style:{fontSize:"clamp(8px,1.8vw,11px)",color:"#1a1a18",fontWeight:"500",
+      textAlign:"center",lineHeight:"1.3",wordBreak:"keep-all",width:"100%"}},[b.title]));
+    grid.appendChild(cell);
+  });
+  inner.appendChild(grid);
+  inner.appendChild(el("div",{style:{textAlign:"center",marginTop:"1rem",fontSize:"13px",color:"#9b9994"}},["시간이 끝나면 자동으로 퀴즈로 넘어가요"]));
+  wrap.appendChild(inner);
+  return wrap;
+}
+
+// ── QUIZ ──────────────────────────────────────────────────────────────────
+function renderQuiz(){
+  const qc=tColor(state.quizTime,QUIZ_SEC);
+  const wrap=el("div",{style:{maxWidth:"420px",margin:"0 auto"}});
+  wrap.appendChild(BackHeader("🤔 이 책의 제목은?",()=>{clearInterval(quizTimerID);setState({phase:PHASE.HOME});}));
+  const inner=el("div",{style:{padding:"1.25rem 1rem",textAlign:"center"}});
+
+  const row=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}});
+  row.appendChild(el("div",{style:{fontSize:"14px",fontWeight:"500",color:"#6b6966"}},[""]));
+  row.appendChild(el("div",{id:"quiz-timer",style:{fontSize:"22px",fontWeight:"500",color:qc}},[state.quizTime+"초"]));
+  inner.appendChild(row);
+
+  const barWrap=el("div",{className:"timer-bar-wrap",style:{height:"4px"}});
+  barWrap.appendChild(el("div",{id:"quiz-bar",className:"timer-bar",style:{width:(state.quizTime/QUIZ_SEC*100)+"%",background:qc}}));
+  inner.appendChild(barWrap);
+
+  const coverWrap=el("div",{style:{display:"flex",justifyContent:"center",marginBottom:"1.25rem"}});
+  coverWrap.appendChild(BookCover(state.quizBook,false,"lg"));
+  inner.appendChild(coverWrap);
+
+  inner.appendChild(el("div",{style:{fontSize:"13px",color:"#6b6966",marginBottom:"1rem",lineHeight:"1.8"}},["책 제목을 큰 소리로 말해보세요!"]));
+
+  if(state.showHint){
+    const hint=el("div",{className:"hint-box"});
+    hint.appendChild(el("div",{className:"hint-title"},["💡 힌트 — 책 제목 목록"]));
+    const tags=el("div",{className:"hint-tags"});
+    state.shownBooks.forEach(b=>tags.appendChild(el("span",{className:"tag"},[b.title])));
+    hint.appendChild(tags);
+    inner.appendChild(hint);
+  }
+
+  const btns=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}});
+  btns.appendChild(el("button",{className:"btn-red",style:{background:"#2E7D32"},onClick:()=>judge(true)},["✅ 정답"]));
+  btns.appendChild(el("button",{className:"btn-red",onClick:()=>judge(false)},["❌ 오답"]));
+  inner.appendChild(btns);
+  wrap.appendChild(inner);
+  return wrap;
+}
+
+// ── RESULT ────────────────────────────────────────────────────────────────
+function renderResult(){
+  const wrap=el("div",{style:{maxWidth:"400px",margin:"0 auto"}});
+  wrap.appendChild(BackHeader("결과",()=>setState({phase:PHASE.HOME})));
+  const inner=el("div",{style:{padding:"2rem 1rem",textAlign:"center"}});
+  if(state.correct){
+    inner.appendChild(el("div",{className:"result-emoji"},["🎉"]));
+    inner.appendChild(el("div",{style:{fontSize:"28px",fontWeight:"500",color:"#2E7D32",marginBottom:"1rem"}},["정답입니다!"]));
+    inner.appendChild(el("div",{style:{fontSize:"15px",color:"#1a1a18",marginBottom:"1rem",fontWeight:"500"}},["「"+state.quizBook.title+"」"]));
+    const coverWrap=el("div",{style:{display:"flex",justifyContent:"center",marginBottom:"1.5rem"}});
+    coverWrap.appendChild(BookCover(state.quizBook,true,"md"));
+    inner.appendChild(coverWrap);
+  } else {
+    inner.appendChild(el("div",{className:"result-emoji"},["😅"]));
+    inner.appendChild(el("div",{style:{fontSize:"22px",fontWeight:"500",color:"#C62828",marginBottom:"8px"}},["오답입니다!"]));
+    const answerEl=el("div",{style:{fontSize:"14px",color:"#6b6966",marginBottom:"1.25rem"}});
+    answerEl.innerHTML="정답은 <strong style='color:#1a1a18'>「"+state.quizBook.title+"」</strong>이었어요";
+    inner.appendChild(answerEl);
+    const coverWrap=el("div",{style:{display:"flex",justifyContent:"center",marginBottom:"1.5rem"}});
+    coverWrap.appendChild(BookCover(state.quizBook,true,"md"));
+    inner.appendChild(coverWrap);
+  }
+  const btns=el("div",{style:{display:"flex",gap:"10px"}});
+  btns.appendChild(el("button",{className:"btn-green",style:{flex:"1",padding:"13px",fontSize:"14px"},onClick:startGame},["다시 도전"]));
+  btns.appendChild(el("button",{className:"btn-outline",style:{flex:"1",padding:"13px"},onClick:()=>setState({phase:PHASE.HOME})},["홈으로"]));
+  inner.appendChild(btns);
+  wrap.appendChild(inner);
+  return wrap;
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────────────────
+function renderAdmin(){
+  const wrap=el("div",{style:{maxWidth:"540px",margin:"0 auto",padding:"1.5rem 1rem"}});
+  const header=el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"1.25rem"}});
+  header.appendChild(el("button",{style:{background:"none",border:"none",fontSize:"20px",color:"#6b6966",cursor:"pointer"},onClick:()=>setState({phase:PHASE.HOME})},["←"]));
+  header.appendChild(el("div",{style:{fontSize:"17px",fontWeight:"500"}},["관리자 메뉴"]));
+  wrap.appendChild(header);
+
+  if(!state.adminAuth){
+    const card=el("div",{className:"card"});
+    const row=el("div",{style:{display:"flex",gap:"8px"}});
+    const inp=el("input",{type:"password",placeholder:"비밀번호",style:{flex:"1",padding:"10px 14px",borderRadius:"10px",border:"1px solid #d4d2cc",fontSize:"15px",outline:"none"}});
+    inp.value=state.adminPass;
+    inp.addEventListener("input",e=>state.adminPass=e.target.value);
+    const tryAuth=()=>{
+      if(state.adminPass===ADMIN_PASS) setState({adminAuth:true,passErr:""});
+      else setState({passErr:"비밀번호가 틀렸어요"});
+    };
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter")tryAuth();});
+    const btn=el("button",{style:{padding:"10px 18px",background:"#2E7D32",color:"#fff",border:"none",borderRadius:"10px",fontSize:"14px"},onClick:tryAuth},["확인"]);
+    row.appendChild(inp); row.appendChild(btn); card.appendChild(row);
+    if(state.passErr) card.appendChild(el("div",{style:{fontSize:"12px",color:"#E53935",marginTop:"8px"}},["✗ "+state.passErr]));
+    wrap.appendChild(card);
+    return wrap;
+  }
+
+  // 탭
+  const tabs=el("div",{style:{display:"flex",gap:"6px",marginBottom:"1.25rem"}});
+  [["upload","📁 표지 등록"],["list","📋 등록 목록"]].forEach(([k,l])=>{
+    const active=state.adminTab===k;
+    const t=el("button",{style:{padding:"8px 16px",borderRadius:"20px",fontSize:"13px",border:"1px solid #d4d2cc",
+      background:active?"#1a1a18":"transparent",color:active?"#fff":"#6b6966",cursor:"pointer"},
+      onClick:()=>setState({adminTab:k})},[l]);
+    tabs.appendChild(t);
+  });
+  wrap.appendChild(tabs);
+
+  if(state.adminTab==="upload"){
+    const info=el("div",{style:{fontSize:"12px",color:"#6b6966",lineHeight:"1.8",marginBottom:"14px",
+      padding:"10px 14px",background:"#FDFAF2",borderRadius:"10px"}});
+    info.innerHTML="책 1권당 슬롯을 추가하고 두 가지 표지를 올려주세요.<br/>"
+      +"<span style='color:#1565C0;font-weight:500'>① 제목 있는 표지</span> — 암기 화면용<br/>"
+      +"<span style='color:#C62828;font-weight:500'>② 제목 없는 표지</span> — 퀴즈 화면용<br/>"
+      +"<span style='color:#9b9994'>② 없으면 ①에서 제목 부분을 자동으로 가려요</span>";
+    wrap.appendChild(info);
+
+    const btnAdd=el("button",{style:{width:"100%",padding:"12px",border:"1.5px dashed #d4d2cc",borderRadius:"12px",
+      background:"transparent",fontSize:"14px",color:"#6b6966",marginBottom:"14px",cursor:"pointer"},
+      onClick:()=>{state.slots.push({id:Date.now(),title:"",titleImageUrl:null,noTitleImageUrl:null});render();}},["+ 책 슬롯 추가"]);
+    wrap.appendChild(btnAdd);
+
+    state.slots.forEach((s,i)=>{
+      const slot=el("div",{className:"card",style:{marginBottom:"14px"}});
+      const sh=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}});
+      sh.appendChild(el("div",{style:{fontSize:"13px",fontWeight:"500",color:"#6b6966"}},["책 "+(i+1)]));
+      sh.appendChild(el("button",{style:{background:"none",border:"none",fontSize:"18px",color:"#6b6966",cursor:"pointer"},
+        onClick:()=>{state.slots=state.slots.filter(x=>x.id!==s.id);render();}},["✕"]));
+      slot.appendChild(sh);
+
+      const titleInput=el("input",{type:"text",placeholder:"책 제목 입력 (필수)",
+        style:{width:"100%",padding:"9px 12px",borderRadius:"9px",border:"1px solid #d4d2cc",
+          background:"#FDFAF2",fontSize:"14px",outline:"none",marginBottom:"14px"}});
+      titleInput.value=s.title;
+      titleInput.addEventListener("input",e=>{s.title=e.target.value;});
+      slot.appendChild(titleInput);
+
+      const imgGrid=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}});
+      [{key:"titleImageUrl",accent:"#1565C0",label:"① 제목 있는 표지"},{key:"noTitleImageUrl",accent:"#C62828",label:"② 제목 없는 표지",hint:"없으면 자동 가림"}].forEach(opt=>{
+        const col=el("div");
+        col.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"500",color:opt.accent,marginBottom:"6px"}},[opt.label]));
+        const lbl=el("label",{style:{display:"block",cursor:"pointer"}});
+        if(s[opt.key]){
+          lbl.appendChild(el("img",{src:s[opt.key],className:"upload-img",style:{border:"2px solid "+opt.accent}}));
+        } else {
+          const box=el("div",{className:"upload-box",style:{border:"1.5px dashed "+opt.accent+"66",color:opt.accent+"99"}});
+          box.appendChild(el("div",{className:"upload-box-emoji"},["📸"]));
+          box.appendChild(el("div",{className:"upload-box-label"},["사진 선택"]));
+          if(opt.hint) box.appendChild(el("div",{className:"upload-box-hint"},[opt.hint]));
+          lbl.appendChild(box);
+        }
+        const fileInput=el("input",{type:"file",accept:"image/*",style:{display:"none"}});
+        fileInput.addEventListener("change",async e=>{
+          if(!e.target.files[0])return;
+          s[opt.key]=await readFile(e.target.files[0]);render();
+        });
+        lbl.appendChild(fileInput);
+        col.appendChild(lbl);
+        imgGrid.appendChild(col);
+      });
+      slot.appendChild(imgGrid);
+      wrap.appendChild(slot);
+    });
+
+    const valid=state.slots.filter(s=>s.title.trim()&&s.titleImageUrl);
+    if(valid.length>0){
+      wrap.appendChild(el("button",{className:"btn-green",style:{padding:"14px",fontSize:"15px"},onClick:()=>{
+        const next=[...state.books,...valid.map(s=>({...s,title:s.title.trim(),color:COLORS[Math.floor(Math.random()*COLORS.length)]}))];
+        state.books=next; state.slots=[];
+        saveData("lib_books7",next);
+        showToast(valid.length+"권 저장됐어요!");
+        render();
+      }},["저장하기 ("+valid.length+"권)"]));
+    }
+  }
+
+  if(state.adminTab==="list"){
+    wrap.appendChild(el("div",{style:{fontSize:"13px",color:"#6b6966",marginBottom:"12px"}},["등록된 책 "+state.books.length+"권"]));
+    state.books.forEach((b,i)=>{
+      const item=el("div",{className:"list-item"});
+      if(b.titleImageUrl) item.appendChild(el("img",{src:b.titleImageUrl,className:"list-thumb"}));
+      else item.appendChild(el("div",{className:"list-thumb-color",style:{background:b.color||"#555"}}));
+      const info=el("div",{style:{flex:"1"}});
+      info.appendChild(el("div",{style:{fontSize:"13px",fontWeight:"500"}},[b.title]));
+      info.appendChild(el("div",{style:{fontSize:"11px",color:"#9b9994",marginTop:"2px"}},
+        [(b.titleImageUrl?"🖼 표지 있음":"🎨 컬러 표지")+(b.noTitleImageUrl?" · 퀴즈용 별도 표지 있음":"")]));
+      item.appendChild(info);
+
+      // 수정 모드
+      if(state.editIdx===i){
+        // 수정 카드
+        const editCard=el("div",{style:{background:"#fff",border:"1px solid #e8e6e0",borderRadius:"12px",padding:"12px",marginBottom:"8px",width:"100%"}});
+        const editTitle=el("div",{style:{fontSize:"12px",fontWeight:"500",color:"#1565C0",marginBottom:"8px"}},["✏️ 책 정보 수정"]);
+        editCard.appendChild(editTitle);
+        const titleInp=el("input",{type:"text",style:{width:"100%",padding:"7px 10px",borderRadius:"8px",border:"1px solid #d4d2cc",fontSize:"13px",outline:"none",marginBottom:"8px"}});
+        titleInp.value=b.title;
+        titleInp.addEventListener("input",e=>{b.title=e.target.value;});
+        editCard.appendChild(titleInp);
+        const imgRow=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginBottom:"10px"}});
+        [{key:"titleImageUrl",accent:"#1565C0",label:"① 암기용"},{key:"noTitleImageUrl",accent:"#C62828",label:"② 퀴즈용"}].forEach(opt=>{
+          const col=el("div");
+          col.appendChild(el("div",{style:{fontSize:"10px",fontWeight:"500",color:opt.accent,marginBottom:"4px"}},[opt.label]));
+          const lbl=el("label",{style:{display:"block",cursor:"pointer"}});
+          if(b[opt.key]){
+            const img=el("img",{src:b[opt.key],style:{width:"100%",height:"80px",objectFit:"cover",borderRadius:"6px",border:"2px solid "+opt.accent}});
+            lbl.appendChild(img);
+          } else {
+            const box=el("div",{style:{height:"80px",border:"1.5px dashed "+opt.accent+"66",borderRadius:"6px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"2px",color:opt.accent+"99"}});
+            box.appendChild(el("div",{style:{fontSize:"18px"}},["📸"]));
+            box.appendChild(el("div",{style:{fontSize:"10px"}},["사진 선택"]));
+            lbl.appendChild(box);
+          }
+          const fi=el("input",{type:"file",accept:"image/*",style:{display:"none"}});
+          fi.addEventListener("change",async e=>{if(!e.target.files[0])return;b[opt.key]=await readFile(e.target.files[0]);render();});
+          lbl.appendChild(fi);
+          col.appendChild(lbl);
+          imgRow.appendChild(col);
+        });
+        editCard.appendChild(imgRow);
+        const saveBtns=el("div",{style:{display:"flex",gap:"6px"}});
+        saveBtns.appendChild(el("button",{style:{flex:"1",padding:"7px",background:"#2E7D32",color:"#fff",border:"none",borderRadius:"8px",fontSize:"12px",cursor:"pointer"},
+          onClick:()=>{b.title=titleInp.value.trim()||b.title;saveData("lib_books7",state.books);setState({editIdx:null});showToast("수정됐어요");}},["저장"]));
+        saveBtns.appendChild(el("button",{style:{flex:"1",padding:"7px",background:"none",border:"1px solid #d4d2cc",borderRadius:"8px",fontSize:"12px",cursor:"pointer",color:"#6b6966"},
+          onClick:()=>setState({editIdx:null})},["취소"]));
+        editCard.appendChild(saveBtns);
+        wrap.appendChild(editCard);
+      } else if(state.confirmIdx===i){
+        const btns=el("div",{style:{display:"flex",gap:"4px"}});
+        btns.appendChild(el("button",{style:{padding:"4px 10px",background:"#E53935",color:"#fff",border:"none",borderRadius:"6px",fontSize:"12px",cursor:"pointer"},
+          onClick:()=>{state.books=state.books.filter((_,idx)=>idx!==i);saveData("lib_books7",state.books);state.confirmIdx=null;render();showToast("삭제됐어요");}},["삭제"]));
+        btns.appendChild(el("button",{style:{padding:"4px 8px",background:"none",border:"1px solid #d4d2cc",borderRadius:"6px",fontSize:"12px",cursor:"pointer",color:"#6b6966"},
+          onClick:()=>setState({confirmIdx:null})},["취소"]));
+        item.appendChild(btns);
+      } else {
+        const actBtns=el("div",{style:{display:"flex",gap:"4px"}});
+        actBtns.appendChild(el("button",{style:{padding:"4px 10px",background:"none",border:"1px solid #1565C0",borderRadius:"6px",fontSize:"12px",cursor:"pointer",color:"#1565C0"},
+          onClick:()=>setState({editIdx:i,confirmIdx:null})},["수정"]));
+        actBtns.appendChild(el("button",{style:{background:"none",border:"none",color:"#E53935",fontSize:"18px",padding:"4px",cursor:"pointer"},
+          onClick:()=>setState({confirmIdx:i,editIdx:null})},["✕"]));
+        item.appendChild(actBtns);
+      }
+      wrap.appendChild(item);
+    });
+    wrap.appendChild(el("button",{style:{fontSize:"12px",color:"#6b6966",background:"none",border:"1px solid #e8e6e0",borderRadius:"8px",padding:"7px 14px",cursor:"pointer",marginTop:"4px"},
+      onClick:()=>{state.books=DEMO_BOOKS;saveData("lib_books7",DEMO_BOOKS);render();showToast("초기화됐어요");}},["기본 목록으로 초기화"]));
+
+    // 완성 파일 다운로드
+    const dlBox=el("div",{style:{marginTop:"20px",padding:"14px",background:"rgba(255,252,245,0.8)",border:"1px solid var(--border)",borderRadius:"14px"}});
+    dlBox.appendChild(el("div",{style:{fontSize:"13px",fontWeight:"500",color:"var(--wood-dark)",marginBottom:"4px"}},["📦 완성 파일 다운로드"]));
+    const dlDesc=el("div",{style:{fontSize:"11px",color:"var(--text3)",lineHeight:"1.7",marginBottom:"10px"}});
+    dlDesc.textContent="책 표지 이미지가 포함된 HTML 파일을 저장해요. GitHub Pages에 올리면 어느 PC에서나 동일하게 보여요.";
+    dlBox.appendChild(dlDesc);
+    dlBox.appendChild(el("button",{style:{width:"100%",padding:"12px",background:"var(--wood-dark)",color:"#fff",border:"none",borderRadius:"10px",fontSize:"14px",fontWeight:"500",cursor:"pointer"},
+      onClick:downloadBaked},["⬇️ 완성 파일 다운로드"]));
+    wrap.appendChild(dlBox);
+  }
+  return wrap;
+}
+
+// ── 완성 파일 다운로드 ───────────────────────────────────────────────────
+function downloadBaked(){
+  if(state.books.length===0){showToast("등록된 책이 없어요","#C62828");return;}
+  showToast("파일 생성 중...");
+  const booksJson=JSON.stringify(state.books);
+  const inject="const INJECTED_BOOKS="+booksJson+";";
+
+  // 현재 HTML에 책 데이터 주입
+  let src=document.documentElement.outerHTML;
+
+  // 주입 코드 삽입 (<script> 바로 뒤)
+  src=src.replace('<script>','<script>
+'+inject+'
+');
+
+  // 상태 초기화 코드 교체 - INJECTED_BOOKS 우선 사용
+  src=src.replace(
+    'books: hasData("lib_books7")?loadData("lib_books7",[]):DEMO_BOOKS,',
+    'books: (typeof INJECTED_BOOKS!=="undefined"&&INJECTED_BOOKS.length>0)?INJECTED_BOOKS:(hasData("lib_books7")?loadData("lib_books7",[]):DEMO_BOOKS),'
+  );
+
+  const blob=new Blob(['<!DOCTYPE html>'+src],{type:"text/html;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="book-game-완성.html";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  showToast("다운로드 완료! ✅");
+}
+
+// ── 게임 로직 ─────────────────────────────────────────────────────────────
+function startGame(){
+  clearInterval(memTimerID); clearInterval(quizTimerID);
+  const pool=state.books.length>=SHOW_COUNT?state.books:[...state.books,...DEMO_BOOKS];
+  state.shownBooks=shuffle(pool).slice(0,SHOW_COUNT);
+  state.memTime=MEMORIZE_SEC;
+  state.phase=PHASE.MEMORIZE;
+  render();
+  memTimerID=setInterval(()=>{
+    state.memTime--;
+    const tc=tColor(state.memTime,MEMORIZE_SEC);
+    const tEl=document.getElementById("mem-timer");
+    const bEl=document.getElementById("mem-bar");
+    if(tEl){tEl.textContent=state.memTime+"초";tEl.style.color=tc;}
+    if(bEl){bEl.style.width=(state.memTime/MEMORIZE_SEC*100)+"%";bEl.style.background=tc;}
+    if(state.memTime<=0){clearInterval(memTimerID);goQuiz();}
+  },1000);
+}
+
+function goQuiz(){
+  clearInterval(memTimerID);
+  state.quizBook=state.shownBooks[Math.floor(Math.random()*state.shownBooks.length)];
+  state.quizTime=QUIZ_SEC;
+  state.showHint=false;
+  state.phase=PHASE.QUIZ;
+  render();
+  quizTimerID=setInterval(()=>{
+    state.quizTime--;
+    if(state.quizTime<=HINT_AT&&!state.showHint){state.showHint=true;render();return;}
+    const tc=tColor(state.quizTime,QUIZ_SEC);
+    const tEl=document.getElementById("quiz-timer");
+    const bEl=document.getElementById("quiz-bar");
+    if(tEl){tEl.textContent=state.quizTime+"초";tEl.style.color=tc;}
+    if(bEl){bEl.style.width=(state.quizTime/QUIZ_SEC*100)+"%";bEl.style.background=tc;}
+    if(state.quizTime<=0){clearInterval(quizTimerID);judge(false);}
+  },1000);
+}
+
+function judge(isCorrect){
+  clearInterval(quizTimerID);
+  state.correct=isCorrect;
+  state.phase=PHASE.RESULT;
+  render();
+}
+
+// ── 시작 ──────────────────────────────────────────────────────────────────
+// 토스트 알림
+function showToast(msg,color="#2E7D32"){
+  const t=document.createElement("div");
+  t.textContent=msg;
+  Object.assign(t.style,{position:"fixed",bottom:"24px",left:"50%",transform:"translateX(-50%)",
+    background:color,color:"#fff",padding:"10px 20px",borderRadius:"20px",fontSize:"13px",
+    fontWeight:"500",zIndex:"999",boxShadow:"0 4px 12px rgba(0,0,0,0.2)",whiteSpace:"nowrap"});
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+render();
+</script>
+</body>
+</html>
